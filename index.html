@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HG Home</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Crisp Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tailwind Config for Custom Fonts & Animations -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'blob': 'blob 10s infinite',
+                        'fade-in': 'fadeIn 0.25s ease-out forwards',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -40px) scale(1.08)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.95)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(8px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200 overflow-x-hidden relative flex flex-col">
+
+    <!-- Ambient Glow Background Effects -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] animate-blob"></div>
+        <div class="absolute top-1/3 -right-32 w-96 h-96 bg-cyan-500/15 rounded-full blur-[120px] animate-blob" style="animation-delay: 2s;"></div>
+        <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-purple-600/15 rounded-full blur-[120px] animate-blob" style="animation-delay: 4s;"></div>
+        <!-- Subtle Grid Overlay -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:28px_28px]"></div>
+    </div>
+
+    <!-- Top Admin Status Bar (Visible ONLY when Owner Mode is Unlocked) -->
+    <div id="adminBanner" class="hidden relative z-20 bg-indigo-950/90 border-b border-indigo-500/30 backdrop-blur-md px-4 py-2.5">
+        <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 text-indigo-200 font-medium">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>Owner Admin Mode Active — Only you can add, edit, or remove paths.</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button 
+                    id="changePinBtn" 
+                    class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-slate-200 transition-colors cursor-pointer"
+                >
+                    <i class="fa-solid fa-key mr-1 text-[10px]"></i> Change PIN
+                </button>
+                <button 
+                    id="lockSessionBtn" 
+                    class="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/30 text-amber-200 font-semibold transition-colors cursor-pointer"
+                >
+                    <i class="fa-solid fa-lock mr-1 text-[10px]"></i> Lock Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 flex-grow">
+        
+        <!-- Header / Hero Section -->
+        <header class="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md text-xs font-medium text-indigo-300 mb-5 shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Central Directory &amp; Fast Navigation</span>
+            </div>
+            
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 mb-4">
+                Project Gateway
+            </h1>
+            
+            <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+                HG apps
+            </p>
+        </header>
+
+        <!-- Control Bar: Search (Public) + Owner Controls (Admin Only) -->
+        <section aria-label="Gateway Controls" class="mb-8 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3.5 bg-slate-900/60 border border-white/10 backdrop-blur-xl p-3.5 rounded-2xl shadow-2xl">
+            
+            <!-- Search Input (Available to Public Visitors & Owner) -->
+            <div class="relative flex-grow">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Filter destinations by title, description, or URL..." 
+                    class="w-full bg-slate-950/70 border border-white/10 focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all"
+                >
+                <button 
+                    id="clearSearchBtn" 
+                    title="Clear search"
+                    class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                >
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Owner-Only Action Buttons (Strictly Hidden in Public Visitor Mode) -->
+            <div id="adminControls" class="hidden flex-wrap items-center gap-2 justify-end">
+                <button 
+                    id="openAddModalBtn"
+                    class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/35 active:scale-[0.98] transition-all cursor-pointer"
+                >
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add New Path</span>
+                </button>
+
+                <button 
+                    id="exportHtmlBtn"
+                    title="Download standalone HTML with your current links hardcoded for public hosting"
+                    class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 text-sm font-medium transition-all cursor-pointer"
+                >
+                    <i class="fa-solid fa-file-export"></i>
+                    <span class="hidden sm:inline">Export Standalone HTML</span>
+                </button>
+
+                <button 
+                    id="exportBtn"
+                    title="View or copy JSON backup"
+                    class="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white text-sm font-medium transition-all cursor-pointer"
+                >
+                    <i class="fa-solid fa-code"></i>
+                    <span class="hidden md:inline">Export JSON</span>
+                </button>
+
+                <button 
+                    id="openResetModalBtn"
+                    title="Restore default links"
+                    class="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.05] hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 text-slate-400 hover:text-rose-300 text-sm font-medium transition-all cursor-pointer"
+                >
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span class="hidden md:inline">Reset Defaults</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Stats / Status Bar -->
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-4 px-1">
+            <span id="linksCounter">Loading destinations...</span>
+            <span id="modeBadge" class="inline-flex items-center gap-1.5 text-slate-500">
+                <i class="fa-solid fa-eye text-[11px]"></i> Public Read-Only View
+            </span>
+        </div>
+
+        <!-- Links Grid Container -->
+        <main id="linksGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Cards injected dynamically -->
+        </main>
+
+        <!-- Empty Search State (Hidden by default) -->
+        <div id="emptyState" class="hidden text-center py-16 px-4 bg-slate-900/40 border border-white/5 rounded-3xl backdrop-blur-md">
+            <div class="w-14 h-14 rounded-2xl bg-slate-800/80 border border-white/10 flex items-center justify-center mx-auto mb-4 text-slate-400 text-xl">
+                <i class="fa-solid fa-compass"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-200 mb-1">No matching destinations</h3>
+            <p class="text-sm text-slate-400 max-w-md mx-auto mb-5">
+                No links matched your current filter. Try a different search term or reset the filter.
+            </p>
+            <button id="emptyResetSearchBtn" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-medium text-white transition-colors cursor-pointer">
+                Clear Filter
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Footer with Subtle Owner Login / Lock Trigger -->
+    <footer class="relative z-10 border-t border-white/5 py-6 px-4">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <p>Project Gateway &bull; All links open safely in a new tab</p>
+            
+            <button 
+                id="footerAuthBtn"
+                type="button"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/15 text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
+            >
+                <i id="footerAuthIcon" class="fa-solid fa-lock text-[11px]"></i>
+                <span id="footerAuthText">Owner Login</span>
+            </button>
+        </div>
+    </footer>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL: OWNER AUTHENTICATION (SETUP PIN / UNLOCK / CHANGE PIN)         -->
+    <!-- ===================================================================== -->
+    <div id="authModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
+        <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-cyan-400 to-purple-500"></div>
+
+            <div class="flex items-center justify-between mb-4">
+                <h2 id="authModalTitle" class="text-lg font-bold text-white flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </span>
+                    <span>Owner Verification</span>
+                </h2>
+                <button id="closeAuthModalBtn" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p id="authModalDesc" class="text-xs text-slate-400 leading-relaxed mb-5">
+                Enter your private Owner PIN or Password to unlock editing controls.
+            </p>
+
+            <form id="authForm" class="space-y-4">
+                <!-- Current PIN field (only visible when changing PIN) -->
+                <div id="currentPinGroup" class="hidden">
+                    <label for="currentPinInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Current PIN / Password</label>
+                    <input 
+                        type="password" 
+                        id="currentPinInput" 
+                        autocomplete="current-password"
+                        placeholder="Enter current PIN..."
+                        class="w-full bg-slate-950/80 border border-white/10 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none transition-all"
+                    >
+                </div>
+
+                <!-- Primary PIN field -->
+                <div>
+                    <label id="pinInputLabel" for="pinInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Owner PIN / Password</label>
+                    <input 
+                        type="password" 
+                        id="pinInput" 
+                        required 
+                        autocomplete="off"
+                        placeholder="Enter private PIN or password..."
+                        class="w-full bg-slate-950/80 border border-white/10 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none transition-all"
+                    >
+                </div>
+
+                <!-- Confirm PIN field (only visible during First-Time Setup or Change PIN) -->
+                <div id="confirmPinGroup" class="hidden">
+                    <label for="confirmPinInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Confirm PIN / Password</label>
+                    <input 
+                        type="password" 
+                        id="confirmPinInput" 
+                        autocomplete="new-password"
+                        placeholder="Re-enter PIN to confirm..."
+                        class="w-full bg-slate-950/80 border border-white/10 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none transition-all"
+                    >
+                </div>
+
+                <p id="authErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2"></p>
+
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
+                    <button 
+                        type="button" 
+                        id="cancelAuthModalBtn"
+                        class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-medium transition-colors cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit"
+                        id="authSubmitBtn"
+                        class="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
+                    >
+                        Unlock Admin Mode
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL: ADD / EDIT LINK (OWNER ONLY)                                   -->
+    <!-- ===================================================================== -->
+    <div id="linkModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+        <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-cyan-400 to-purple-500"></div>
+
+            <div class="flex items-center justify-between mb-5">
+                <h2 id="modalTitle" class="text-xl font-bold text-white flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-link"></i>
+                    </span>
+                    <span>Add New Path</span>
+                </h2>
+                <button id="closeLinkModalBtn" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="linkForm" class="space-y-4">
+                <input type="hidden" id="linkId">
+
+                <!-- Title -->
+                <div>
+                    <label for="linkTitle" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Project / Site Title *</label>
+                    <input 
+                        type="text" 
+                        id="linkTitle" 
+                        required 
+                        placeholder="e.g., Portfolio, Analytics Dashboard..."
+                        class="w-full bg-slate-950/80 border border-white/10 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none transition-all"
+                    >
+                </div>
+
+                <!-- URL -->
+                <div>
+                    <label for="linkUrl" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Destination URL *</label>
+                    <input 
+                        type="url" 
+                        id="linkUrl" 
+                        required 
+                        placeholder="https://example.com"
+                        class="w-full bg-slate-950/80 border border-white/10 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-3.5 py-2.5 text-sm font-mono text-cyan-300 placeholder-slate-600 outline-none transition-all"
+                    >
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="linkDesc" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Short Description *</label>
+                    <textarea 
+                        id="linkDesc" 
+                        rows="2" 
+                        required 
+                        placeholder="Briefly describe the purpose of this destination..."
+                        class="w-full bg-slate-950/80 border border-white/10 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-600 outline-none transition-all resize-none"
+                    ></textarea>
+                </div>
+
+                <!-- Icon & Color Pickers -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Icon</label>
+                        <div id="iconPicker" class="grid grid-cols-5 gap-2"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Accent Color</label>
+                        <div id="colorPicker" class="grid grid-cols-5 gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10 mt-6">
+                    <button 
+                        type="button" 
+                        id="cancelLinkModalBtn"
+                        class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-medium transition-colors cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit"
+                        class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
+                    >
+                        Save Path
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL: EXPORT JSON CONFIG (OWNER ONLY)                                -->
+    <!-- ===================================================================== -->
+    <div id="exportModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+        <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-code text-cyan-400"></i>
+                    <span>Export Links JSON</span>
+                </h2>
+                <button id="closeExportModalBtn" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-400 mb-3">
+                Copy this JSON backup of your configured destinations. To publish updates for all visitors on GitHub Pages, use <strong>Export Standalone HTML</strong>.
+            </p>
+            <textarea 
+                id="exportTextarea" 
+                readonly 
+                rows="8"
+                class="w-full bg-slate-950 border border-white/10 rounded-xl p-3.5 text-xs font-mono text-emerald-300 outline-none resize-none mb-4"
+            ></textarea>
+            <div class="flex justify-end gap-2.5">
+                <button id="closeExportFooterBtn" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-medium cursor-pointer">
+                    Close
+                </button>
+                <button id="copyExportBtn" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors cursor-pointer">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>Copy JSON</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL: CONFIRMATION (DELETE OR RESET)                                 -->
+    <!-- ===================================================================== -->
+    <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+        <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-md w-full p-6 shadow-2xl text-center">
+            <div class="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="confirmTitle" class="text-lg font-bold text-white mb-2">Confirm Action</h3>
+            <p id="confirmMessage" class="text-sm text-slate-400 mb-6">Are you sure you want to proceed?</p>
+            <div class="flex items-center justify-center gap-3">
+                <button id="cancelConfirmBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-medium transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <button id="proceedConfirmBtn" class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold shadow-lg shadow-rose-600/20 transition-colors cursor-pointer">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TOAST NOTIFICATION                                                    -->
+    <!-- ===================================================================== -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-800/95 border border-white/15 text-white text-sm font-medium shadow-2xl backdrop-blur-md">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastText">Action completed!</span>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- APPLICATION LOGIC                                                     -->
+    <!-- ===================================================================== -->
+    <script>
+        /* =================================================================
+           HARDCODED DEFAULT LINKS (Updated automatically on Standalone Export)
+           ================================================================= */
+        const DEFAULT_LINKS = [
+            {
+                id: 'default-aether-render',
+                title: 'Aether Render',
+                url: 'https://heitorhanzelgontijo-svg.github.io/Aether-render/',
+                description: 'Dedicated environment for real-time graphics rendering, shader visualization, and interactive visual engineering.',
+                icon: 'fa-cube',
+                color: 'cyan',
+                isDefault: true
+            },
+            {
+                id: 'default-hobbs-home',
+                title: 'Hobbs Home',
+                url: 'https://heitorhanzelgontijo-svg.github.io/Hobbs_home/',
+                description: 'Personal digital home base and command center showcasing interactive builds, experiments, and web projects.',
+                icon: 'fa-house-chimney',
+                color: 'indigo',
+                isDefault: true
+            }
+        ];
+
+        const STORAGE_KEY = 'project_gateway_links_v2';
+        const PIN_STORAGE_KEY = 'project_gateway_owner_pin_hash_v2';
+        const SESSION_UNLOCK_KEY = 'project_gateway_admin_unlocked_v2';
+
+        // Available Icon Choices
+        const AVAILABLE_ICONS = [
+            'fa-cube', 'fa-house-chimney', 'fa-rocket', 'fa-code', 'fa-compass',
+            'fa-layer-group', 'fa-globe', 'fa-terminal', 'fa-wand-magic-sparkles', 'fa-folder-open'
+        ];
+
+        // Tailwind Accent Color Themes
+        const COLOR_THEMES = {
+            cyan: {
+                label: 'Cyan',
+                swatch: 'bg-cyan-500',
+                iconBg: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+                hoverBorder: 'hover:border-cyan-500/50',
+                glow: 'group-hover:shadow-cyan-500/10',
+                badge: 'text-cyan-300 bg-cyan-500/10'
+            },
+            indigo: {
+                label: 'Indigo',
+                swatch: 'bg-indigo-500',
+                iconBg: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
+                hoverBorder: 'hover:border-indigo-500/50',
+                glow: 'group-hover:shadow-indigo-500/10',
+                badge: 'text-indigo-300 bg-indigo-500/10'
+            },
+            emerald: {
+                label: 'Emerald',
+                swatch: 'bg-emerald-500',
+                iconBg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+                hoverBorder: 'hover:border-emerald-500/50',
+                glow: 'group-hover:shadow-emerald-500/10',
+                badge: 'text-emerald-300 bg-emerald-500/10'
+            },
+            purple: {
+                label: 'Purple',
+                swatch: 'bg-purple-500',
+                iconBg: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+                hoverBorder: 'hover:border-purple-500/50',
+                glow: 'group-hover:shadow-purple-500/10',
+                badge: 'text-purple-300 bg-purple-500/10'
+            },
+            amber: {
+                label: 'Amber',
+                swatch: 'bg-amber-500',
+                iconBg: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+                hoverBorder: 'hover:border-amber-500/50',
+                glow: 'group-hover:shadow-amber-500/10',
+                badge: 'text-amber-300 bg-amber-500/10'
+            }
+        };
+
+        // Application State
+        let links = [];
+        let isAdminUnlocked = false;
+        let authMode = 'login'; // 'setup' | 'login' | 'change'
+        let searchQuery = '';
+        let selectedIcon = AVAILABLE_ICONS[0];
+        let selectedColor = 'cyan';
+        let pendingConfirmCallback = null;
+
+        // DOM Elements
+        const linksGrid = document.getElementById('linksGrid');
+        const linksCounter = document.getElementById('linksCounter');
+        const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+        // Modals
+        const authModal = document.getElementById('authModal');
+        const authForm = document.getElementById('authForm');
+        const linkModal = document.getElementById('linkModal');
+        const linkForm = document.getElementById('linkForm');
+        const exportModal = document.getElementById('exportModal');
+        const confirmModal = document.getElementById('confirmModal');
+
+        /**
+         * Lightweight deterministic hash for Owner PIN storage in localStorage.
+         */
+        function hashPin(rawPin) {
+            let hash = 2166136261;
+            const salted = 'pgw_owner_' + rawPin;
+            for (let i = 0; i < salted.length; i++) {
+                hash ^= salted.charCodeAt(i);
+                hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+            }
+            return (hash >>> 0).toString(16);
+        }
+
+        function hasConfiguredPin() {
+            return Boolean(localStorage.getItem(PIN_STORAGE_KEY));
+        }
+
+        /**
+         * Synchronizes UI visibility strictly between Public Visitor Mode and Owner Admin Mode.
+         */
+        function updateAdminUIState() {
+            const adminBanner = document.getElementById('adminBanner');
+            const adminControls = document.getElementById('adminControls');
+            const modeBadge = document.getElementById('modeBadge');
+            const footerAuthIcon = document.getElementById('footerAuthIcon');
+            const footerAuthText = document.getElementById('footerAuthText');
+
+            if (isAdminUnlocked) {
+                adminBanner.classList.remove('hidden');
+                adminControls.classList.remove('hidden');
+                adminControls.classList.add('flex');
+                modeBadge.innerHTML = `<i class="fa-solid fa-unlock text-amber-400 text-[11px]"></i> <span class="text-amber-300 font-medium">Owner Mode Unlocked</span>`;
+                footerAuthIcon.className = 'fa-solid fa-lock-open text-amber-400 text-[11px]';
+                footerAuthText.textContent = 'Lock Admin Session';
+            } else {
+                adminBanner.classList.add('hidden');
+                adminControls.classList.add('hidden');
+                adminControls.classList.remove('flex');
+                modeBadge.innerHTML = `<i class="fa-solid fa-eye text-[11px]"></i> Public Visitor View`;
+                footerAuthIcon.className = 'fa-solid fa-lock text-[11px]';
+                footerAuthText.textContent = hasConfiguredPin() ? 'Owner Login' : 'Setup Owner Lock';
+            }
+
+            renderLinks();
+        }
+
+        /**
+         * Opens the Owner Authentication Modal in Setup, Login, or Change PIN mode.
+         */
+        function openAuthModal(requestedMode) {
+            authMode = requestedMode;
+            authForm.reset();
+            const authErrorText = document.getElementById('authErrorText');
+            authErrorText.classList.add('hidden');
+
+            const titleEl = document.getElementById('authModalTitle');
+            const descEl = document.getElementById('authModalDesc');
+            const currentPinGroup = document.getElementById('currentPinGroup');
+            const confirmPinGroup = document.getElementById('confirmPinGroup');
+            const pinLabel = document.getElementById('pinInputLabel');
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            if (authMode === 'setup') {
+                titleEl.innerHTML = `
+                    <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </span>
+                    <span>Create Owner PIN</span>
+                `;
+                descEl.textContent = 'Set a private Owner PIN or Password. Only you will be able to unlock Admin Mode to add, edit, or delete links.';
+                currentPinGroup.classList.add('hidden');
+                confirmPinGroup.classList.remove('hidden');
+                pinLabel.textContent = 'New Owner PIN / Password';
+                submitBtn.textContent = 'Set PIN & Unlock';
+            } else if (authMode === 'change') {
+                titleEl.innerHTML = `
+                    <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-key"></i>
+                    </span>
+                    <span>Change Owner PIN</span>
+                `;
+                descEl.textContent = 'Verify your current PIN and choose a new private PIN for Owner Mode.';
+                currentPinGroup.classList.remove('hidden');
+                confirmPinGroup.classList.remove('hidden');
+                pinLabel.textContent = 'New Owner PIN / Password';
+                submitBtn.textContent = 'Update PIN';
+            } else {
+                titleEl.innerHTML = `
+                    <span class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </span>
+                    <span>Owner Login</span>
+                `;
+                descEl.textContent = 'Enter your private Owner PIN or Password to unlock editing controls.';
+                currentPinGroup.classList.add('hidden');
+                confirmPinGroup.classList.add('hidden');
+                pinLabel.textContent = 'Owner PIN / Password';
+                submitBtn.textContent = 'Unlock Admin Mode';
+            }
+
+            authModal.classList.remove('hidden');
+            authModal.classList.add('flex');
+            if (authMode === 'change') {
+                document.getElementById('currentPinInput').focus();
+            } else {
+                document.getElementById('pinInput').focus();
+            }
+        }
+
+        function closeAuthModal() {
+            authModal.classList.add('hidden');
+            authModal.classList.remove('flex');
+        }
+
+        function showAuthError(msg) {
+            const errEl = document.getElementById('authErrorText');
+            errEl.textContent = msg;
+            errEl.classList.remove('hidden');
+        }
+
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pin = document.getElementById('pinInput').value.trim();
+            const confirmPin = document.getElementById('confirmPinInput').value.trim();
+            const currentPin = document.getElementById('currentPinInput').value.trim();
+
+            if (pin.length < 4) {
+                showAuthError('Please choose a PIN or password with at least 4 characters.');
+                return;
+            }
+
+            if (authMode === 'setup') {
+                if (pin !== confirmPin) {
+                    showAuthError('PIN entries do not match. Please try again.');
+                    return;
+                }
+                localStorage.setItem(PIN_STORAGE_KEY, hashPin(pin));
+                isAdminUnlocked = true;
+                sessionStorage.setItem(SESSION_UNLOCK_KEY, '1');
+                closeAuthModal();
+                updateAdminUIState();
+                showToast('Owner PIN created! Admin Mode unlocked.');
+            } else if (authMode === 'change') {
+                const storedHash = localStorage.getItem(PIN_STORAGE_KEY);
+                if (hashPin(currentPin) !== storedHash) {
+                    showAuthError('Current PIN is incorrect.');
+                    return;
+                }
+                if (pin !== confirmPin) {
+                    showAuthError('New PIN entries do not match.');
+                    return;
+                }
+                localStorage.setItem(PIN_STORAGE_KEY, hashPin(pin));
+                closeAuthModal();
+                showToast('Owner PIN updated successfully.');
+            } else {
+                const storedHash = localStorage.getItem(PIN_STORAGE_KEY);
+                if (hashPin(pin) !== storedHash) {
+                    showAuthError('Invalid Owner PIN. Access denied.');
+                    return;
+                }
+                isAdminUnlocked = true;
+                sessionStorage.setItem(SESSION_UNLOCK_KEY, '1');
+                closeAuthModal();
+                updateAdminUIState();
+                showToast('Welcome back! Owner Admin Mode unlocked.');
+            }
+        });
+
+        function lockAdminSession() {
+            isAdminUnlocked = false;
+            sessionStorage.removeItem(SESSION_UNLOCK_KEY);
+            updateAdminUIState();
+            showToast('Session locked. Switched to Public Visitor View.');
+        }
+
+        /**
+         * Loads links from localStorage or falls back to DEFAULT_LINKS.
+         */
+        function loadLinks() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        links = parsed;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error('Error reading localStorage:', e);
+            }
+            links = JSON.parse(JSON.stringify(DEFAULT_LINKS));
+            saveLinks();
+        }
+
+        function saveLinks() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+            } catch (e) {
+                console.error('Error saving to localStorage:', e);
+                showToast('Unable to save changes locally.', 'error');
+            }
+        }
+
+        function formatDisplayUrl(rawUrl) {
+            try {
+                const urlObj = new URL(rawUrl);
+                let path = urlObj.pathname === '/' ? '' : urlObj.pathname.replace(/\/$/, '');
+                return `${urlObj.hostname}${path}`;
+            } catch {
+                return rawUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            }
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        /**
+         * Renders destination cards. Edit/Delete controls are ONLY rendered when isAdminUnlocked === true.
+         */
+        function renderLinks() {
+            const query = searchQuery.trim().toLowerCase();
+            const filtered = links.filter(item => 
+                item.title.toLowerCase().includes(query) ||
+                item.description.toLowerCase().includes(query) ||
+                item.url.toLowerCase().includes(query)
+            );
+
+            linksCounter.textContent = filtered.length === 1 
+                ? '1 destination available' 
+                : `${filtered.length} destinations available`;
+
+            if (filtered.length === 0) {
+                linksGrid.innerHTML = '';
+                linksGrid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            linksGrid.classList.remove('hidden');
+
+            linksGrid.innerHTML = filtered.map(link => {
+                const theme = COLOR_THEMES[link.color] || COLOR_THEMES.indigo;
+                const displayUrl = formatDisplayUrl(link.url);
+
+                // Strictly only render Edit & Delete buttons if Owner Mode is unlocked
+                const ownerCardActions = isAdminUnlocked ? `
+                    <div class="flex items-center gap-1.5">
+                        <button 
+                            type="button"
+                            onclick="openEditModal('${escapeHTML(link.id)}')" 
+                            title="Edit destination"
+                            class="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-white/15 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                        >
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <button 
+                            type="button"
+                            onclick="requestDeleteLink('${escapeHTML(link.id)}')" 
+                            title="Delete destination"
+                            class="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 flex items-center justify-center transition-colors cursor-pointer"
+                        >
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                ` : '';
+
+                return `
+                    <article class="group relative flex flex-col justify-between bg-slate-900/65 hover:bg-slate-900/90 border border-white/10 ${theme.hoverBorder} rounded-3xl p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 shadow-xl ${theme.glow}">
+                        
+                        <div>
+                            <div class="flex items-start justify-between gap-4 mb-4">
+                                <a href="${escapeHTML(link.url)}" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-2xl border ${theme.iconBg} flex items-center justify-center text-xl shadow-inner group-hover:scale-105 transition-transform">
+                                    <i class="fa-solid ${escapeHTML(link.icon)}"></i>
+                                </a>
+
+                                ${ownerCardActions}
+                            </div>
+
+                            <a href="${escapeHTML(link.url)}" target="_blank" rel="noopener noreferrer" class="block group/link">
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <h2 class="text-xl font-bold text-white group-hover/link:text-indigo-300 transition-colors">
+                                        ${escapeHTML(link.title)}
+                                    </h2>
+                                    ${link.isDefault ? `<span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${theme.badge}">Featured</span>` : ''}
+                                </div>
+
+                                <div class="inline-flex items-center gap-1.5 text-xs font-mono text-slate-400 bg-slate-950/60 border border-white/5 px-2.5 py-1 rounded-lg mb-3 max-w-full">
+                                    <i class="fa-solid fa-link text-[10px] text-slate-500 shrink-0"></i>
+                                    <span class="truncate">${escapeHTML(displayUrl)}</span>
+                                </div>
+
+                                <p class="text-sm text-slate-300/90 leading-relaxed mb-6">
+                                    ${escapeHTML(link.description)}
+                                </p>
+                            </a>
+                        </div>
+
+                        <div class="pt-3 border-t border-white/5 flex items-center justify-between gap-3">
+                            <button 
+                                type="button"
+                                onclick="copySingleUrl('${escapeHTML(link.url)}')"
+                                class="text-xs font-medium text-slate-400 hover:text-slate-200 inline-flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                                title="Copy direct URL"
+                            >
+                                <i class="fa-regular fa-copy"></i>
+                                <span>Copy URL</span>
+                            </button>
+
+                            <a 
+                                href="${escapeHTML(link.url)}" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.07] hover:bg-indigo-600 text-white text-xs font-semibold border border-white/10 hover:border-indigo-500 transition-all group/btn"
+                            >
+                                <span>Launch Site</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[11px] group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"></i>
+                            </a>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function renderModalPickers() {
+            const iconPicker = document.getElementById('iconPicker');
+            iconPicker.innerHTML = AVAILABLE_ICONS.map(icon => {
+                const isSelected = icon === selectedIcon;
+                return `
+                    <button 
+                        type="button" 
+                        onclick="selectIcon('${icon}')"
+                        class="h-10 rounded-xl border flex items-center justify-center text-sm transition-all cursor-pointer ${
+                            isSelected 
+                            ? 'bg-indigo-600/30 border-indigo-400 text-white scale-105' 
+                            : 'bg-slate-950/70 border-white/10 text-slate-400 hover:text-white hover:border-white/25'
+                        }"
+                    >
+                        <i class="fa-solid ${icon}"></i>
+                    </button>
+                `;
+            }).join('');
+
+            const colorPicker = document.getElementById('colorPicker');
+            colorPicker.innerHTML = Object.entries(COLOR_THEMES).map(([key, theme]) => {
+                const isSelected = key === selectedColor;
+                return `
+                    <button 
+                        type="button" 
+                        onclick="selectColor('${key}')"
+                        title="${theme.label}"
+                        class="h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                            isSelected 
+                            ? 'bg-white/10 border-white text-white scale-105' 
+                            : 'bg-slate-950/70 border-white/10 hover:border-white/25'
+                        }"
+                    >
+                        <span class="w-5 h-5 rounded-full ${theme.swatch} ${isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900' : ''}"></span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        window.selectIcon = function(icon) {
+            selectedIcon = icon;
+            renderModalPickers();
+        };
+
+        window.selectColor = function(color) {
+            selectedColor = color;
+            renderModalPickers();
+        };
+
+        function openAddModal() {
+            if (!isAdminUnlocked) return;
+            document.getElementById('modalTitle').innerHTML = `
+                <span class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-plus"></i>
+                </span>
+                <span>Add New Path</span>
+            `;
+            linkForm.reset();
+            document.getElementById('linkId').value = '';
+            selectedIcon = 'fa-rocket';
+            selectedColor = 'cyan';
+            renderModalPickers();
+            linkModal.classList.remove('hidden');
+            linkModal.classList.add('flex');
+            document.getElementById('linkTitle').focus();
+        }
+
+        window.openEditModal = function(id) {
+            if (!isAdminUnlocked) return;
+            const target = links.find(l => l.id === id);
+            if (!target) return;
+
+            document.getElementById('modalTitle').innerHTML = `
+                <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-pen"></i>
+                </span>
+                <span>Edit Path</span>
+            `;
+            document.getElementById('linkId').value = target.id;
+            document.getElementById('linkTitle').value = target.title;
+            document.getElementById('linkUrl').value = target.url;
+            document.getElementById('linkDesc').value = target.description;
+            selectedIcon = target.icon || 'fa-cube';
+            selectedColor = target.color || 'indigo';
+            renderModalPickers();
+
+            linkModal.classList.remove('hidden');
+            linkModal.classList.add('flex');
+        };
+
+        function closeLinkModal() {
+            linkModal.classList.add('hidden');
+            linkModal.classList.remove('flex');
+        }
+
+        linkForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!isAdminUnlocked) return;
+
+            const id = document.getElementById('linkId').value;
+            const title = document.getElementById('linkTitle').value.trim();
+            let url = document.getElementById('linkUrl').value.trim();
+            const description = document.getElementById('linkDesc').value.trim();
+
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
+
+            if (id) {
+                const index = links.findIndex(l => l.id === id);
+                if (index !== -1) {
+                    links[index] = {
+                        ...links[index],
+                        title,
+                        url,
+                        description,
+                        icon: selectedIcon,
+                        color: selectedColor
+                    };
+                    showToast('Path updated successfully!');
+                }
+            } else {
+                const newLink = {
+                    id: 'custom-' + Date.now(),
+                    title,
+                    url,
+                    description,
+                    icon: selectedIcon,
+                    color: selectedColor,
+                    isDefault: false
+                };
+                links.push(newLink);
+                showToast('New path added to gateway!');
+            }
+
+            saveLinks();
+            renderLinks();
+            closeLinkModal();
+        });
+
+        window.requestDeleteLink = function(id) {
+            if (!isAdminUnlocked) return;
+            const target = links.find(l => l.id === id);
+            if (!target) return;
+
+            openConfirmModal(
+                'Delete Path?',
+                `Are you sure you want to remove "${target.title}" from your gateway?`,
+                () => {
+                    links = links.filter(l => l.id !== id);
+                    saveLinks();
+                    renderLinks();
+                    showToast('Destination removed.');
+                }
+            );
+        };
+
+        /**
+         * Exports a clean, standalone HTML file with current links hardcoded into DEFAULT_LINKS
+         * so the owner can upload it directly to GitHub Pages or any static host.
+         */
+        function exportStandaloneHTML() {
+            if (!isAdminUnlocked) return;
+            try {
+                // Clone the current document cleanly
+                const docClone = document.documentElement.cloneNode(true);
+
+                // Reset transient UI states inside the clone so visitors always start in locked public mode
+                const cloneAdminBanner = docClone.querySelector('#adminBanner');
+                if (cloneAdminBanner) cloneAdminBanner.classList.add('hidden');
+
+                const cloneAdminControls = docClone.querySelector('#adminControls');
+                if (cloneAdminControls) {
+                    cloneAdminControls.classList.add('hidden');
+                    cloneAdminControls.classList.remove('flex');
+                }
+
+                const cloneGrid = docClone.querySelector('#linksGrid');
+                if (cloneGrid) cloneGrid.innerHTML = '';
+
+                const cloneToast = docClone.querySelector('#toast');
+                if (cloneToast) cloneToast.classList.add('translate-y-20', 'opacity-0');
+
+                // Serialize the updated links into DEFAULT_LINKS inside the inline script
+                const serializedLinks = JSON.stringify(links, null, 12);
+                const scripts = docClone.querySelectorAll('script');
+                scripts.forEach(script => {
+                    if (script.textContent && script.textContent.includes('const DEFAULT_LINKS = [')) {
+                        script.textContent = script.textContent.replace(
+                            /const DEFAULT_LINKS = \[[\s\S]*?\];/,
+                            `const DEFAULT_LINKS = ${serializedLinks};`
+                        );
+                    }
+                });
+
+                const finalHtml = '<!DOCTYPE html>\n' + docClone.outerHTML;
+                const blob = new Blob([finalHtml], { type: 'text/html;charset=utf-8' });
+                const downloadUrl = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'index.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
+
+                showToast('Standalone index.html downloaded for public hosting!');
+            } catch (err) {
+                console.error('Export failed:', err);
+                showToast('Failed to generate standalone HTML.', 'error');
+            }
+        }
+
+        function copyTextToClipboard(text, successMsg) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            tempInput.style.position = 'fixed';
+            tempInput.style.opacity = '0';
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast(successMsg);
+            } catch (err) {
+                showToast('Failed to copy text.', 'error');
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        window.copySingleUrl = function(url) {
+            copyTextToClipboard(url, 'URL copied to clipboard!');
+        };
+
+        function openConfirmModal(title, message, onConfirm) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            pendingConfirmCallback = onConfirm;
+            confirmModal.classList.remove('hidden');
+            confirmModal.classList.add('flex');
+        }
+
+        function closeConfirmModal() {
+            confirmModal.classList.add('hidden');
+            confirmModal.classList.remove('flex');
+            pendingConfirmCallback = null;
+        }
+
+        document.getElementById('proceedConfirmBtn').addEventListener('click', () => {
+            if (typeof pendingConfirmCallback === 'function') {
+                pendingConfirmCallback();
+            }
+            closeConfirmModal();
+        });
+
+        document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
+
+        let toastTimeout;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toastText');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastText.textContent = message;
+            toastIcon.className = type === 'error' 
+                ? 'fa-solid fa-circle-exclamation text-rose-400' 
+                : 'fa-solid fa-circle-check text-emerald-400';
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3200);
+        }
+
+        // Search Events
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            clearSearchBtn.classList.toggle('hidden', searchQuery.length === 0);
+            renderLinks();
+        });
+
+        function clearSearch() {
+            searchQuery = '';
+            searchInput.value = '';
+            clearSearchBtn.classList.add('hidden');
+            renderLinks();
+        }
+
+        clearSearchBtn.addEventListener('click', clearSearch);
+        document.getElementById('emptyResetSearchBtn').addEventListener('click', clearSearch);
+
+        // Auth & Admin Event Listeners
+        document.getElementById('footerAuthBtn').addEventListener('click', () => {
+            if (isAdminUnlocked) {
+                lockAdminSession();
+            } else {
+                openAuthModal(hasConfiguredPin() ? 'login' : 'setup');
+            }
+        });
+
+        document.getElementById('lockSessionBtn').addEventListener('click', lockAdminSession);
+        document.getElementById('changePinBtn').addEventListener('click', () => openAuthModal('change'));
+        document.getElementById('closeAuthModalBtn').addEventListener('click', closeAuthModal);
+        document.getElementById('cancelAuthModalBtn').addEventListener('click', closeAuthModal);
+
+        // Link Management Events
+        document.getElementById('openAddModalBtn').addEventListener('click', openAddModal);
+        document.getElementById('closeLinkModalBtn').addEventListener('click', closeLinkModal);
+        document.getElementById('cancelLinkModalBtn').addEventListener('click', closeLinkModal);
+        document.getElementById('exportHtmlBtn').addEventListener('click', exportStandaloneHTML);
+
+        // Export JSON Modal
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            if (!isAdminUnlocked) return;
+            document.getElementById('exportTextarea').value = JSON.stringify(links, null, 2);
+            exportModal.classList.remove('hidden');
+            exportModal.classList.add('flex');
+        });
+
+        function closeExportModal() {
+            exportModal.classList.add('hidden');
+            exportModal.classList.remove('flex');
+        }
+
+        document.getElementById('closeExportModalBtn').addEventListener('click', closeExportModal);
+        document.getElementById('closeExportFooterBtn').addEventListener('click', closeExportModal);
+        document.getElementById('copyExportBtn').addEventListener('click', () => {
+            const code = document.getElementById('exportTextarea').value;
+            copyTextToClipboard(code, 'JSON configuration copied!');
+        });
+
+        // Reset Defaults
+        document.getElementById('openResetModalBtn').addEventListener('click', () => {
+            if (!isAdminUnlocked) return;
+            openConfirmModal(
+                'Restore Default Paths?',
+                'This will reset your links back to the original featured paths and remove custom additions.',
+                () => {
+                    links = JSON.parse(JSON.stringify(DEFAULT_LINKS));
+                    saveLinks();
+                    clearSearch();
+                    showToast('Default destinations restored!');
+                }
+            );
+        });
+
+        // Close modals on Escape key or backdrop click
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAuthModal();
+                closeLinkModal();
+                closeExportModal();
+                closeConfirmModal();
+            }
+        });
+
+        [authModal, linkModal, exportModal, confirmModal].forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeAuthModal();
+                    closeLinkModal();
+                    closeExportModal();
+                    closeConfirmModal();
+                }
+            });
+        });
+
+        // Initialize App (Defaults strictly to Locked Public Visitor View)
+        isAdminUnlocked = sessionStorage.getItem(SESSION_UNLOCK_KEY) === '1' && hasConfiguredPin();
+        loadLinks();
+        updateAdminUIState();
+    </script>
+</body>
+</html>
